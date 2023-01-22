@@ -46,7 +46,3 @@ class Order(models.Model):
         related_name="orders",
     )
     created_at = models.DateTimeField(auto_now=True)
-
-
-class User(AbstractUser):
-    pass

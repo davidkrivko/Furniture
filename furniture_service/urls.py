@@ -18,6 +18,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/furniture/", include("furniture.urls", namespace="furniture")),
-    path("api/user/", include("user.urls", namespace="user"))
+    path("api/furniture_store/", include("furniture.urls", namespace="furniture")),
+    path("api/user/", include("user.urls", namespace="user")),
+
+    path("__debug__/", include('debug_toolbar.urls')),
 ]

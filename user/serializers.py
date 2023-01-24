@@ -1,10 +1,5 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models.signals import post_save
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
-
-from user.models import create_auth_token
 
 
 class UserSerializer(serializers.ModelSerializer):

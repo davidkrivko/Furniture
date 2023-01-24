@@ -1,5 +1,4 @@
 from rest_framework import viewsets
-from rest_framework.authtoken.models import Token
 
 from user.models import User
 from user.serializers import UserSerializer, UserListSerializer

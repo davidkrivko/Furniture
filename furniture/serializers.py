@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from furniture.models import Furniture, Type, Commentary, Order
+from furniture.models import Furniture, Type, Commentary, Order, OrderItem
 
 
 class FurnitureSerializer(serializers.ModelSerializer):
@@ -10,11 +10,38 @@ class FurnitureSerializer(serializers.ModelSerializer):
             "id",
             "model",
             "type",
-            "description",
             "price",
-            "comments"
         )
         read_only_fields = ("id",)
+
+
+class FurnitureCreateSerializer(FurnitureSerializer):
+    class Meta:
+        model = Furniture
+        fields = (
+            "id",
+            "model",
+            "type",
+            "description",
+            "price",
+        )
+        read_only_fields = ("id",)
+
+
+class FurnitureDetailSerializer(FurnitureSerializer):
+    class Meta:
+        model = Furniture
+        fields = (
+            "id",
+            "model",
+            "type",
+            "description",
+            "price",
+            "length",
+            "width",
+            "height",
+            "commentaries",
+        )
 
 
 class TypeSerializer(serializers.ModelSerializer):
@@ -32,15 +59,44 @@ class CommentarySerializer(serializers.ModelSerializer):
         fields = (
             "owner",
             "furniture",
+            "created_time",
             "content",
         )
 
 
+class CommentaryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Commentary
+        fields = (
+            "content",
+        )
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ("furniture", "amount")
+
+
+class FurnitureOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Furniture
+        fields = (
+            "id",
+            "model",
+            "price",
+        )
+
+
 class OrderSerializer(serializers.ModelSerializer):
+    furniture = FurnitureOrderSerializer(many=True)
+    amount = OrderItemSerializer(source="orders", many=True)
+
     class Meta:
         model = Order
         fields = (
+            "id",
             "furniture",
-            "user",
-            "created_at",
+            "amount",
+            "created_time",
         )

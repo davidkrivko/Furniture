@@ -1,14 +1,17 @@
-from rest_framework import viewsets
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from user.models import User
-from user.serializers import UserSerializer, UserListSerializer
+from user.serializers import UserSerializer
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+class RegistrationView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
-    def get_serializer_class(self):
-        if self.action == "list":
-            return UserListSerializer
-        return UserSerializer
+
+class UserView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user

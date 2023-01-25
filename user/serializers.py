@@ -7,9 +7,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = (
-            "username",
-            "password",
             "email",
+            "password",
             "first_name",
             "last_name",
         )
@@ -32,16 +31,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserListSerializer(UserSerializer):
-    auth_token = serializers.StringRelatedField(many=False, read_only=True)
-
     class Meta:
         model = get_user_model()
         fields = (
             "id",
-            "username",
             "email",
             "last_name",
             "first_name",
             "is_staff",
-            "auth_token",
         )

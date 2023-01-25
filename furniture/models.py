@@ -14,7 +14,7 @@ class Furniture(models.Model):
     )
     description = models.TextField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
-    photo = models.ImageField(null=True, upload_to=image_file_path)
+    photo = models.ImageField(null=True, upload_to=image_file_path, blank=True)
     height = models.IntegerField(default=0)
     width = models.IntegerField(default=0)
     length = models.IntegerField(default=0)

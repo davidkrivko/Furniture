@@ -1,5 +1,7 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from furniture.models import (
@@ -8,6 +10,7 @@ from furniture.models import (
     Order,
     Commentary, OrderItem,
 )
+from furniture.permissions import IsAdminOrReadOnlyAuthenticated
 from furniture.serializers import (
     FurnitureSerializer,
     TypeSerializer,
@@ -21,6 +24,14 @@ from furniture.serializers import (
 class FurnitureViewSet(viewsets.ModelViewSet):
     queryset = Furniture.objects.all()
     serializer_class = FurnitureSerializer
+    permission_classes = (IsAdminOrReadOnlyAuthenticated, )
+
+    @staticmethod
+    def _params_to_ints(qs):
+        """
+            Split parameters from request
+        """
+        return [int(str_id) for str_id in qs.split(",")]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -29,8 +40,25 @@ class FurnitureViewSet(viewsets.ModelViewSet):
             return CommentaryCreateSerializer
         return FurnitureSerializer
 
+    def get_queryset(self):
+        """
+        Add filtering by types
+        """
+        queryset = self.queryset
+
+        type_obj = self.request.query_params.get("type")
+
+        if type_obj:
+            type_ids = self._params_to_ints(type_obj)
+            queryset = queryset.filter(type__id__in=type_ids)
+
+        return queryset
+
     @action(detail=True, methods=["post"])
     def add_commentary(self, request, pk=None):
+        """
+        Extra action for add commentaries
+        """
         user = request.user
         furniture = self.get_object()
 
@@ -48,6 +76,7 @@ class FurnitureViewSet(viewsets.ModelViewSet):
 class TypeViewSet(viewsets.ModelViewSet):
     queryset = Type.objects.all()
     serializer_class = TypeSerializer
+    permission_classes = (IsAdminOrReadOnlyAuthenticated,)
 
 
 class CommentaryViewSet(viewsets.GenericViewSet,
@@ -56,20 +85,41 @@ class CommentaryViewSet(viewsets.GenericViewSet,
     serializer_class = CommentarySerializer
 
     def perform_create(self, serializer):
+        """
+        Using authenticated user
+        """
         serializer.save(user=self.request.user.id)
+
+
+class OrderPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    pagination_class = OrderPagination
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user.id)
+        """
+        Show just users orders
+        """
+        return self.queryset.filter(user=self.request.user.id).prefetch_related("furniture", "orders__furniture")
 
     def perform_create(self, serializer):
+        """
+        Using authenticated user
+        """
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        """
+        Redefine create method for using
+        already created furniture objects
+        """
         data = request.data
 
         new_order = Order.objects.create(user=request.user)

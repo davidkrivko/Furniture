@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from furniture.models import Furniture, Type, Commentary, Order, OrderItem
+from furniture.models import (
+    Furniture,
+    Type,
+    Commentary,
+    Order,
+    OrderItem,
+)
 
 
 class FurnitureSerializer(serializers.ModelSerializer):
@@ -28,7 +34,20 @@ class FurnitureCreateSerializer(FurnitureSerializer):
         read_only_fields = ("id",)
 
 
+class CommentarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Commentary
+        fields = (
+            "owner",
+            "furniture",
+            "created_time",
+            "content",
+        )
+
+
 class FurnitureDetailSerializer(FurnitureSerializer):
+    commentaries = CommentarySerializer(many=True, read_only=True)
+
     class Meta:
         model = Furniture
         fields = (
@@ -53,17 +72,6 @@ class TypeSerializer(serializers.ModelSerializer):
         )
 
 
-class CommentarySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Commentary
-        fields = (
-            "owner",
-            "furniture",
-            "created_time",
-            "content",
-        )
-
-
 class CommentaryCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commentary
@@ -73,6 +81,9 @@ class CommentaryCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    """
+    Serializer for nesting in OrderSerializer
+    """
     class Meta:
         model = OrderItem
         fields = ("furniture", "amount")
